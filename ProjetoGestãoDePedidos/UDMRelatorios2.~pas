@@ -1,0 +1,25 @@
+unit UDMRelatorios2;
+
+interface
+
+uses
+  SysUtils, Classes, DB, IBCustomDataSet, IBQuery;
+
+type
+  TDMRelatorios2 = class(TDataModule)
+    IBQueryRelatorioPedidos: TIBQuery;
+    dsRelatorioPedidos: TDataSource;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  DMRelatorios2: TDMRelatorios2;
+
+implementation
+
+{$R *.dfm}
+
+end.

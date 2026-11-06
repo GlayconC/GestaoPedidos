@@ -1,0 +1,18 @@
+object DMRelatorios2: TDMRelatorios2
+  OldCreateOrder = False
+  OnCreate = DataModuleCreate
+  Left = 547
+  Top = 364
+  Height = 316
+  Width = 404
+  object IBQueryRelatorioPedidos: TIBQuery
+    BufferChunks = 1000
+    CachedUpdates = False
+    Left = 72
+    Top = 32
+  end
+  object dsRelatorioPedidos: TDataSource
+    Left = 72
+    Top = 96
+  end
+end

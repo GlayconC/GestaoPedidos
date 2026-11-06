@@ -1,0 +1,164 @@
+object FrmRepPedidos: TFrmRepPedidos
+  Left = 245
+  Top = 130
+  Width = 1349
+  Height = 1005
+  Caption = 'Relat'#243'rio de Pedidos'
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object rlRelatorioPedidos: TRLReport
+    Left = 280
+    Top = 0
+    Width = 794
+    Height = 1123
+    DataSource = rlDataSourcePedidos
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = []
+  end
+  object rlCabecalho: TRLBand
+    Left = 392
+    Top = 40
+    Width = 593
+    Height = 57
+    BandType = btHeader
+    Transparent = False
+    object RLLabel1: TRLLabel
+      Left = 232
+      Top = 16
+      Width = 134
+      Height = 13
+      Caption = 'RELAT'#211'RIO DE PEDIDOS'
+      Transparent = False
+    end
+    object RLLabel7: TRLLabel
+      Left = 32
+      Top = 32
+      Width = 40
+      Height = 13
+      Caption = 'N'#250'mero'
+      Transparent = False
+    end
+    object RLLabel8: TRLLabel
+      Left = 136
+      Top = 32
+      Width = 26
+      Height = 13
+      Caption = 'Data'
+      Transparent = False
+    end
+    object RLLabel9: TRLLabel
+      Left = 272
+      Top = 32
+      Width = 35
+      Height = 13
+      Caption = 'Cliente'
+      Transparent = False
+    end
+    object RLLabel10: TRLLabel
+      Left = 424
+      Top = 32
+      Width = 33
+      Height = 13
+      Caption = 'Status'
+      Transparent = False
+    end
+    object RLLabel11: TRLLabel
+      Left = 523
+      Top = 32
+      Width = 54
+      Height = 13
+      Caption = 'Valor Total'
+      Transparent = False
+    end
+  end
+  object rlDetalhe: TRLBand
+    Left = 344
+    Top = 120
+    Width = 681
+    Height = 238
+    Transparent = False
+    object RLDBText3: TRLDBText
+      Left = 304
+      Top = 56
+      Width = 48
+      Height = 13
+      DataField = 'CLIENTE'
+      Transparent = False
+    end
+    object RLDBText4: TRLDBText
+      Left = 440
+      Top = 56
+      Width = 46
+      Height = 13
+      DataField = 'STATUS'
+      Transparent = False
+    end
+    object RLDBText5: TRLDBText
+      Left = 560
+      Top = 56
+      Width = 80
+      Height = 13
+      Alignment = taRightJustify
+      DataField = 'VALOR_TOTAL'
+      DisplayMask = '#,##0.00'
+      Transparent = False
+    end
+  end
+  object rlRodape: TRLBand
+    Left = 344
+    Top = 373
+    Width = 681
+    Height = 67
+    BandType = btFooter
+    Transparent = False
+    object RLLabel2: TRLLabel
+      Left = 496
+      Top = 32
+      Width = 85
+      Height = 13
+      Caption = 'Total do per'#237'odo:'
+      Transparent = False
+    end
+    object rlTotalPeriodo: TRLDBResult
+      Left = 608
+      Top = 32
+      Width = 110
+      Height = 13
+      Alignment = taRightJustify
+      DataField = 'VALOR_TOTAL'
+      DisplayMask = '#,##0.00'
+      Info = riSum
+      Transparent = False
+    end
+  end
+  object RLDBText1: TRLDBText
+    Left = 392
+    Top = 176
+    Width = 98
+    Height = 13
+    DataField = 'NUMERO_PEDIDO'
+    Transparent = False
+  end
+  object RLDBText2: TRLDBText
+    Left = 544
+    Top = 176
+    Width = 32
+    Height = 13
+    DataField = 'DATA'
+    Transparent = False
+  end
+  object rlDataSourcePedidos: TDataSource
+    Left = 168
+    Top = 96
+  end
+end

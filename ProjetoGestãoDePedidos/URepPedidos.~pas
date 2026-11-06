@@ -1,0 +1,49 @@
+unit URepPedidos;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, RLReport, DB, UDMRelatorios2, RLReport;;
+
+type
+  TFrmRepPedidos = class(TForm)
+    rlRelatorioPedidos: TRLReport;
+    rlDataSourcePedidos: TDataSource;
+    rlCabecalho: TRLBand;
+    rlDetalhe: TRLBand;
+    rlRodape: TRLBand;
+    RLLabel1: TRLLabel;
+    RLLabel7: TRLLabel;
+    RLLabel8: TRLLabel;
+    RLLabel9: TRLLabel;
+    RLLabel10: TRLLabel;
+    RLLabel11: TRLLabel;
+    RLDBText1: TRLDBText;
+    RLDBText2: TRLDBText;
+    RLDBText3: TRLDBText;
+    RLDBText4: TRLDBText;
+    RLDBText5: TRLDBText;
+    RLLabel2: TRLLabel;
+    rlTotalPeriodo: TRLDBResult;
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FrmRepPedidos: TFrmRepPedidos;
+
+implementation
+
+{$R *.dfm}
+
+procedure TFrmRepPedidos.FormCreate(Sender: TObject);
+begin
+  dsRepPedidos.DataSet :=
+    DMRelatorios2.IBQueryRelatorioPedidos;
+end;
+
+end.

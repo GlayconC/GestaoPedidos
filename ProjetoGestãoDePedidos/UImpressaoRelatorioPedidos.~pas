@@ -1,0 +1,290 @@
+unit UImpressaoRelatorioPedidos;
+
+interface
+
+uses
+  Windows, SysUtils, DB, Printers, Dialogs, Graphics;
+
+type
+  TImpressaoRelatorioPedidos = class
+  private
+    class function PixelsX(AMilimetros: Integer): Integer;
+    class function PixelsY(AMilimetros: Integer): Integer;
+    class function LocalizarImpressoraPDF: Integer;
+
+    class procedure ImprimirCabecalho(
+      ADataInicial: TDateTime;
+      ADataFinal: TDateTime;
+      var APosicaoY: Integer
+    );
+  public
+    class procedure Imprimir(
+      ADataInicial: TDateTime;
+      ADataFinal: TDateTime;
+      ADataSet: TDataSet
+    );
+    class procedure GerarPDF(
+      ADataInicial: TDateTime;
+      ADataFinal: TDateTime;
+      ADataSet: TDataSet
+    );
+  end;
+
+implementation
+
+class function TImpressaoRelatorioPedidos.PixelsX(
+  AMilimetros: Integer
+): Integer;
+begin
+  Result := MulDiv(
+    AMilimetros * 10,
+    GetDeviceCaps(Printer.Handle, LOGPIXELSX),
+    254
+  );
+end;
+
+class function TImpressaoRelatorioPedidos.PixelsY(
+  AMilimetros: Integer
+): Integer;
+begin
+  Result := MulDiv(
+    AMilimetros * 10,
+    GetDeviceCaps(Printer.Handle, LOGPIXELSY),
+    254
+  );
+end;
+
+class procedure TImpressaoRelatorioPedidos.ImprimirCabecalho(
+  ADataInicial: TDateTime;
+  ADataFinal: TDateTime;
+  var APosicaoY: Integer
+);
+begin
+  Printer.Canvas.Font.Size := 14;
+  Printer.Canvas.Font.Style := [fsBold];
+
+  Printer.Canvas.TextOut(
+    PixelsX(15),
+    PixelsY(APosicaoY),
+    'RELATÓRIO DE PEDIDOS'
+  );
+
+  APosicaoY := APosicaoY + 12;
+
+  Printer.Canvas.Font.Size := 10;
+  Printer.Canvas.Font.Style := [];
+
+  Printer.Canvas.TextOut(
+    PixelsX(15),
+    PixelsY(APosicaoY),
+    'Período: ' +
+    FormatDateTime('dd/mm/yyyy', ADataInicial) +
+    ' até ' +
+    FormatDateTime('dd/mm/yyyy', ADataFinal)
+  );
+
+  APosicaoY := APosicaoY + 12;
+
+  Printer.Canvas.Font.Style := [fsBold];
+
+  Printer.Canvas.TextOut(PixelsX(15), PixelsY(APosicaoY), 'Número');
+  Printer.Canvas.TextOut(PixelsX(35), PixelsY(APosicaoY), 'Data');
+  Printer.Canvas.TextOut(PixelsX(55), PixelsY(APosicaoY), 'Cliente');
+  Printer.Canvas.TextOut(PixelsX(120), PixelsY(APosicaoY), 'Status');
+  Printer.Canvas.TextOut(PixelsX(155), PixelsY(APosicaoY), 'Valor');
+
+  Printer.Canvas.Font.Style := [];
+  APosicaoY := APosicaoY + 8;
+end;
+
+class procedure TImpressaoRelatorioPedidos.Imprimir(
+  ADataInicial: TDateTime;
+  ADataFinal: TDateTime;
+  ADataSet: TDataSet
+);
+var
+  DialogoImpressao: TPrintDialog;
+  PosicaoY: Integer;
+  TotalPeriodo: Currency;
+  Marcador: TBookmark;
+  PossuiMarcador: Boolean;
+begin
+  if ADataSet.IsEmpty then
+  begin
+    ShowMessage('Não há pedidos para imprimir.');
+    Exit;
+  end;
+
+  DialogoImpressao := TPrintDialog.Create(nil);
+
+  try
+    if not DialogoImpressao.Execute then
+      Exit;
+
+    Printer.Title := 'Relatório de Pedidos';
+    Printer.BeginDoc;
+
+    PossuiMarcador := not ADataSet.IsEmpty;
+
+    if PossuiMarcador then
+      Marcador := ADataSet.GetBookmark;
+
+    try
+      PosicaoY := 20;
+      TotalPeriodo := 0;
+
+      ImprimirCabecalho(
+        ADataInicial,
+        ADataFinal,
+        PosicaoY
+      );
+
+      ADataSet.First;
+
+      while not ADataSet.Eof do
+      begin
+        if PosicaoY > 270 then
+        begin
+          Printer.NewPage;
+          PosicaoY := 20;
+
+          ImprimirCabecalho(
+            ADataInicial,
+            ADataFinal,
+            PosicaoY
+          );
+        end;
+
+        Printer.Canvas.TextOut(
+          PixelsX(15),
+          PixelsY(PosicaoY),
+          ADataSet.FieldByName('NUMERO_PEDIDO').AsString
+        );
+
+        Printer.Canvas.TextOut(
+          PixelsX(35),
+          PixelsY(PosicaoY),
+          ADataSet.FieldByName('DATA').AsString
+        );
+
+        Printer.Canvas.TextOut(
+          PixelsX(55),
+          PixelsY(PosicaoY),
+          Copy(
+            ADataSet.FieldByName('CLIENTE').AsString,
+            1,
+            28
+          )
+        );
+
+        Printer.Canvas.TextOut(
+          PixelsX(120),
+          PixelsY(PosicaoY),
+          ADataSet.FieldByName('STATUS').AsString
+        );
+
+        Printer.Canvas.TextOut(
+          PixelsX(155),
+          PixelsY(PosicaoY),
+          FormatFloat(
+            '0.00',
+            ADataSet.FieldByName('VALOR_TOTAL').AsCurrency
+          )
+        );
+
+        TotalPeriodo := TotalPeriodo +
+          ADataSet.FieldByName('VALOR_TOTAL').AsCurrency;
+
+        PosicaoY := PosicaoY + 7;
+        ADataSet.Next;
+      end;
+
+      PosicaoY := PosicaoY + 10;
+
+      Printer.Canvas.Font.Style := [fsBold];
+
+      Printer.Canvas.TextOut(
+        PixelsX(135),
+        PixelsY(PosicaoY),
+        'Total do período: ' +
+        FormatFloat('0.00', TotalPeriodo)
+      );
+
+      Printer.EndDoc;
+    except
+      Printer.Abort;
+      raise;
+    end;
+
+    if PossuiMarcador then
+    begin
+      if ADataSet.BookmarkValid(Marcador) then
+        ADataSet.GotoBookmark(Marcador);
+
+      ADataSet.FreeBookmark(Marcador);
+    end;
+  finally
+    DialogoImpressao.Free;
+  end;
+end;
+
+class function TImpressaoRelatorioPedidos.LocalizarImpressoraPDF: Integer;
+var
+  Indice: Integer;
+begin
+  Result := -1;
+
+  for Indice := 0 to Printer.Printers.Count - 1 do
+  begin
+    if Pos(
+      'PDF',
+      UpperCase(Printer.Printers[Indice])
+    ) > 0 then
+    begin
+      Result := Indice;
+      Exit;
+    end;
+  end;
+end;
+
+class procedure TImpressaoRelatorioPedidos.GerarPDF(
+  ADataInicial: TDateTime;
+  ADataFinal: TDateTime;
+  ADataSet: TDataSet
+);
+var
+  IndiceImpressoraPDF: Integer;
+  IndiceImpressoraAnterior: Integer;
+begin
+  IndiceImpressoraPDF := LocalizarImpressoraPDF;
+
+  if IndiceImpressoraPDF = -1 then
+  begin
+    ShowMessage(
+      'Nenhuma impressora PDF foi encontrada.' + #13#10 +
+      'Instale ou ative a Microsoft Print to PDF no Windows.'
+    );
+    Exit;
+  end;
+
+  IndiceImpressoraAnterior := Printer.PrinterIndex;
+
+  try
+    Printer.PrinterIndex := IndiceImpressoraPDF;
+
+    ShowMessage(
+      'A impressora PDF foi selecionada.' + #13#10 +
+      'Na próxima tela, clique em Imprimir e escolha o nome e a pasta do arquivo.'
+    );
+
+    Imprimir(
+      ADataInicial,
+      ADataFinal,
+      ADataSet
+    );
+  finally
+    Printer.PrinterIndex := IndiceImpressoraAnterior;
+  end;
+end;
+
+end.
