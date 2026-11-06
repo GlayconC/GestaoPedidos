@@ -19,6 +19,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure btnConsultarClick(Sender: TObject);
     procedure btnImprimirClick(Sender: TObject);
+    procedure btnGerarPDFClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -69,6 +70,17 @@ end;
 procedure TFrmRelatorioPedidos.btnImprimirClick(Sender: TObject);
 begin
   TImpressaoRelatorioPedidos.Imprimir(
+    dtpDataInicial.Date,
+    dtpDataFinal.Date,
+    DMRelatorios2.IBQueryRelatorioPedidos
+  );
+end;
+
+procedure TFrmRelatorioPedidos.btnGerarPDFClick(
+  Sender: TObject
+);
+begin
+  TImpressaoRelatorioPedidos.GerarPDF(
     dtpDataInicial.Date,
     dtpDataFinal.Date,
     DMRelatorios2.IBQueryRelatorioPedidos

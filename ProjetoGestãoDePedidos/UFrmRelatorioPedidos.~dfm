@@ -1,6 +1,6 @@
 object FrmRelatorioPedidos: TFrmRelatorioPedidos
-  Left = 629
-  Top = 271
+  Left = 649
+  Top = 177
   Width = 787
   Height = 449
   Caption = 'Relat'#243'rio de Pedidos'
@@ -78,6 +78,7 @@ object FrmRelatorioPedidos: TFrmRelatorioPedidos
     Height = 25
     Caption = 'Imprimir'
     TabOrder = 3
+    OnClick = btnImprimirClick
   end
   object btnGerarPDF: TButton
     Left = 664
@@ -86,6 +87,7 @@ object FrmRelatorioPedidos: TFrmRelatorioPedidos
     Height = 25
     Caption = 'PDF'
     TabOrder = 4
+    OnClick = btnGerarPDFClick
   end
   object btnConsultar: TButton
     Left = 32

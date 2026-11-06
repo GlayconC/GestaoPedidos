@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Grids, DBGrids, ComCtrls, UDMRelatorios2, UImpressaoRelatorioPedidos;
+  Dialogs, StdCtrls, Grids, DBGrids, ComCtrls, UDMRelatorios2, URepPedidos, UImpressaoRelatorioPedidos;
 
 type
   TFrmRelatorioPedidos = class(TForm)
@@ -69,11 +69,13 @@ end;
 
 procedure TFrmRelatorioPedidos.btnImprimirClick(Sender: TObject);
 begin
-  TImpressaoRelatorioPedidos.Imprimir(
-    dtpDataInicial.Date,
-    dtpDataFinal.Date,
-    DMRelatorios2.IBQueryRelatorioPedidos
-  );
+  if DMRelatorios2.IBQueryRelatorioPedidos.IsEmpty then
+  begin
+    ShowMessage('Não há pedidos para imprimir.');
+    Exit;
+  end;
+
+  FrmRepPedidos.rlRelatorioPedidos.Preview;
 end;
 
 procedure TFrmRelatorioPedidos.btnGerarPDFClick(
