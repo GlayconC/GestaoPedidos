@@ -13,7 +13,9 @@ uses
   UFrmRelatorioPedidos in 'UFrmRelatorioPedidos.pas' {FrmRelatorioPedidos},
   UDMRelatorios2 in 'UDMRelatorios2.pas' {DMRelatorios2: TDataModule},
   UImpressaoRelatorioPedidos in 'UImpressaoRelatorioPedidos.pas',
-  URepPedidos in 'URepPedidos.pas' {FrmRepPedidos};
+  URepPedidos in 'URepPedidos.pas' {FrmRepPedidos},
+  URegistroErros in 'URegistroErros.pas',
+  UFrmConsultaProdutos in 'UFrmConsultaProdutos.pas' {FrmConsultaProdutos};
 
 {$R *.res}
 
@@ -29,5 +31,6 @@ begin
   Application.CreateForm(TDMRelatorios2, DMRelatorios2);
   Application.CreateForm(TFrmRelatorioPedidos, FrmRelatorioPedidos);
   Application.CreateForm(TFrmRepPedidos, FrmRepPedidos);
+  Application.CreateForm(TFrmConsultaProdutos, FrmConsultaProdutos);
   Application.Run;
 end.

@@ -1,6 +1,6 @@
 object FrmClientes: TFrmClientes
-  Left = 1265
-  Top = 178
+  Left = 1381
+  Top = 113
   Width = 442
   Height = 481
   Caption = 'Clientes'
@@ -12,6 +12,7 @@ object FrmClientes: TFrmClientes
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Nome: TLabel
@@ -69,9 +70,9 @@ object FrmClientes: TFrmClientes
   object id: TLabel
     Left = 24
     Top = 24
-    Width = 17
+    Width = 57
     Height = 20
-    Caption = 'Id'
+    Caption = 'C'#243'digo'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16

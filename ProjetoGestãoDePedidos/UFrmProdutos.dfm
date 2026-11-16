@@ -1,6 +1,6 @@
 object FormProdutos: TFormProdutos
-  Left = 966
-  Top = 152
+  Left = 911
+  Top = 230
   Width = 507
   Height = 533
   Caption = 'Cadastro de Produtos'
@@ -13,6 +13,7 @@ object FormProdutos: TFormProdutos
   KeyPreview = True
   OldCreateOrder = False
   OnKeyDown = FormKeyDown
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -114,22 +115,23 @@ object FormProdutos: TFormProdutos
     Left = 32
     Top = 56
     Width = 57
-    Height = 33
+    Height = 21
     TabOrder = 0
     OnExit = edtCodigoExit
+    OnKeyPress = edtCodigoKeyPress
   end
   object edtNome: TEdit
     Left = 32
     Top = 128
     Width = 425
-    Height = 33
+    Height = 21
     TabOrder = 1
   end
   object edtPreco: TEdit
     Left = 32
     Top = 320
     Width = 105
-    Height = 33
+    Height = 21
     TabOrder = 3
     OnKeyPress = edtPrecoKeyPress
   end
@@ -137,7 +139,7 @@ object FormProdutos: TFormProdutos
     Left = 32
     Top = 392
     Width = 105
-    Height = 33
+    Height = 21
     TabOrder = 4
     OnKeyPress = edtQuantidadeKeyPress
   end
@@ -147,5 +149,14 @@ object FormProdutos: TFormProdutos
     Width = 409
     Height = 73
     TabOrder = 2
+  end
+  object btnConsulta: TButton
+    Left = 96
+    Top = 56
+    Width = 25
+    Height = 17
+    Caption = '...'
+    TabOrder = 7
+    OnClick = btnConsultaClick
   end
 end

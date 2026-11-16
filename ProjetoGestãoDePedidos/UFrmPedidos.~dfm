@@ -1,6 +1,6 @@
 object FrmPedidos: TFrmPedidos
-  Left = 725
-  Top = 587
+  Left = 884
+  Top = 185
   Width = 753
   Height = 684
   Caption = 'Cadastro de Pedidos'
@@ -212,9 +212,11 @@ object FrmPedidos: TFrmPedidos
     Font.Height = -16
     Font.Name = 'MS Sans Serif'
     Font.Style = []
+    MaxLength = 10
     ParentFont = False
     TabOrder = 3
     OnExit = edtChaveClienteExit
+    OnKeyPress = CodigoNumericoKeyPress
   end
   object edtNomeCliente: TEdit
     Left = 152
@@ -240,9 +242,11 @@ object FrmPedidos: TFrmPedidos
     Font.Height = -16
     Font.Name = 'MS Sans Serif'
     Font.Style = []
+    MaxLength = 20
     ParentFont = False
     TabOrder = 4
     OnExit = edtCodigoProdutoExit
+    OnKeyPress = CodigoNumericoKeyPress
   end
   object edtNomeProduto: TEdit
     Left = 152
@@ -282,9 +286,11 @@ object FrmPedidos: TFrmPedidos
     Font.Height = -16
     Font.Name = 'MS Sans Serif'
     Font.Style = []
+    MaxLength = 10
     ParentFont = False
     TabOrder = 5
     Text = '0'
+    OnKeyPress = CodigoNumericoKeyPress
   end
   object btnAdicionarItem: TButton
     Left = 24
@@ -321,6 +327,7 @@ object FrmPedidos: TFrmPedidos
     Top = 360
     Width = 689
     Height = 145
+    ReadOnly = True
     TabOrder = 11
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText

@@ -1,12 +1,11 @@
 object DM: TDM
   OldCreateOrder = False
+  OnCreate = DataModuleCreate
   Left = 326
   Top = 424
   Height = 400
   Width = 440
   object IBDatabase1: TIBDatabase
-    Connected = True
-    DatabaseName = 'localhost:D:\Projetos\ProjetoGest'#227'oDePedidos\gestaopedidos.fdb'
     Params.Strings = (
       'user_name=SYSDBA'
       'password=masterkey'

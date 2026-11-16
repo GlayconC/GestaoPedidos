@@ -17,6 +17,7 @@ type
   private
     procedure ConfigurarItensTemporarios;
     function InserirPedido(
+      ANumeroDocumento: Integer;
       AChaveCliente: Integer;
       AData: TDateTime;
       const AStatus: String;
@@ -40,9 +41,10 @@ type
   public
     procedure BuscarCliente(AChave: Integer);
     procedure BuscarProduto(ACodigo: Integer);
-    procedure BuscarPedido(AChave: Integer);
+    procedure BuscarPedido(ANumeroDocumento: Integer);
     function SalvarPedido(
       AChavePedido: Integer;
+      ANumeroDocumento: Integer;
       AChaveCliente: Integer;
       AData: TDateTime;
       const AStatus: String;
@@ -116,19 +118,19 @@ begin
   IBQueryProdutoPedido.Open;
 end;
 
-procedure TDMPedidos.BuscarPedido(AChave: Integer);
+procedure TDMPedidos.BuscarPedido(ANumeroDocumento: Integer);
 begin
-  if IBQueryPedidos.Active then
-    IBQueryPedidos.Close;
-
+  IBQueryPedidos.Close;
   IBQueryPedidos.SQL.Clear;
   IBQueryPedidos.SQL.Add(
-  'SELECT CHAVE, CLIENTES_CHAVE, DATA, STATUS, VALOR_TOTAL ' +
+    'SELECT CHAVE, NUMERO_DOCUMENTO, CLIENTES_CHAVE, DATA, STATUS, VALOR_TOTAL ' +
     'FROM PEDIDOS ' +
-    'WHERE CHAVE = :CHAVE'
+    'WHERE NUMERO_DOCUMENTO = :NUMERO_DOCUMENTO'
   );
 
-  IBQueryPedidos.ParamByName('CHAVE').AsInteger := AChave;
+  IBQueryPedidos.ParamByName('NUMERO_DOCUMENTO').AsInteger :=
+    ANumeroDocumento;
+
   IBQueryPedidos.Open;
 end;
 
@@ -167,11 +169,12 @@ begin
 end;
 
 function TDMPedidos.InserirPedido(
-    AChaveCliente: Integer;
-    AData: TDateTime;
-    const AStatus: String;
-    AValorTotal: Currency
-  ): Integer;
+  ANumeroDocumento: Integer;
+  AChaveCliente: Integer;
+  AData: TDateTime;
+  const AStatus: String;
+  AValorTotal: Currency
+): Integer;
 var
   ChavePedido: Integer;
 begin
@@ -182,15 +185,20 @@ begin
 
   IBQueryPedidos.SQL.Add(
     'INSERT INTO PEDIDOS ' +
-    '(CHAVE, CLIENTES_CHAVE, DATA, STATUS, VALOR_TOTAL) ' +
-    'VALUES (:CHAVE, :CLIENTES_CHAVE, :DATA, :STATUS, :VALOR_TOTAL)'
+    '(CHAVE, NUMERO_DOCUMENTO, CLIENTES_CHAVE, DATA, STATUS, VALOR_TOTAL) ' +
+    'VALUES ' +
+    '(:CHAVE, :NUMERO_DOCUMENTO, :CLIENTES_CHAVE, :DATA, :STATUS, :VALOR_TOTAL)'
   );
 
   IBQueryPedidos.ParamByName('CHAVE').AsInteger := ChavePedido;
-  IBQueryPedidos.ParamByName('CLIENTES_CHAVE').AsInteger := AChaveCliente;
-  IBQueryPedidos.ParamByName('DATA').AsDateTime := AData;
+  IBQueryPedidos.ParamByName('NUMERO_DOCUMENTO').AsInteger :=
+    ANumeroDocumento;
+  IBQueryPedidos.ParamByName('CLIENTES_CHAVE').AsInteger :=
+    AChaveCliente;
+  IBQueryPedidos.ParamByName('DATA').AsDate := AData;
   IBQueryPedidos.ParamByName('STATUS').AsString := AStatus;
-  IBQueryPedidos.ParamByName('VALOR_TOTAL').AsCurrency := AValorTotal;
+  IBQueryPedidos.ParamByName('VALOR_TOTAL').AsCurrency :=
+    AValorTotal;
 
   IBQueryPedidos.ExecSQL;
 
@@ -273,6 +281,7 @@ end;
 
 function TDMPedidos.SalvarPedido(
   AChavePedido: Integer;
+  ANumeroDocumento: Integer;
   AChaveCliente: Integer;
   AData: TDateTime;
   const AStatus: String;
@@ -284,24 +293,25 @@ begin
 
   try
     if AChavePedido = 0 then
-      Result := InserirPedido(
-        AChaveCliente,
-        AData,
-        AStatus,
-        AValorTotal
-      )
-    else
-    begin
-      AtualizarPedido(
-        AChavePedido,
-        AChaveCliente,
-        AData,
-        AStatus,
-        AValorTotal
-      );
+    Result := InserirPedido(
+      ANumeroDocumento,
+      AChaveCliente,
+      AData,
+      AStatus,
+      AValorTotal
+    )
+  else
+  begin
+    AtualizarPedido(
+      AChavePedido,
+      AChaveCliente,
+      AData,
+      AStatus,
+      AValorTotal
+    );
 
-      Result := AChavePedido;
-    end;
+    Result := AChavePedido;
+  end;
 
     ExcluirItensPedido(Result);
     GravarItensPedido(Result);

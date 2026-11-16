@@ -1,6 +1,6 @@
 object FrmConsulta: TFrmConsulta
-  Left = 537
-  Top = 259
+  Left = 791
+  Top = 170
   BorderStyle = bsSingle
   Caption = 'Consulta'
   ClientHeight = 385
@@ -31,6 +31,7 @@ object FrmConsulta: TFrmConsulta
     Width = 233
     Height = 21
     TabOrder = 0
+    OnChange = edtPesquisarChange
   end
   object DBGrid1: TDBGrid
     Left = 24

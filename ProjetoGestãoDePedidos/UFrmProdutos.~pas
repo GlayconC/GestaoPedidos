@@ -20,6 +20,7 @@ type
     edtPreco: TEdit;
     edtQuantidade: TEdit;
     memDescricao: TMemo;
+    btnConsulta: TButton;
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure edtPrecoKeyPress(Sender: TObject; var Key: Char);
@@ -27,8 +28,11 @@ type
     procedure btnSalvarClick(Sender: TObject);
     procedure edtCodigoExit(Sender: TObject);
     procedure btnExcluirClick(Sender: TObject);
+    procedure edtCodigoKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+    procedure LimparCampos;
+    procedure btnConsultaClick(Sender: TObject);
   private
-      procedure LimparCampos;
       function ValidarCampos: Boolean;
       procedure SalvarProduto;
       procedure BuscarProduto;
@@ -37,6 +41,7 @@ type
       function ProdutoExiste: Boolean;
       function ConfirmarExclusao: Boolean;
       procedure ExcluirProdutoAtual;
+      function CodigoProdutoValido: Boolean;
   public
     { Public declarations }
   end;
@@ -45,6 +50,8 @@ var
   FormProdutos: TFormProdutos;
 
 implementation
+
+uses UFrmConsultaProdutos;
 
 {$R *.dfm}
 
@@ -126,12 +133,8 @@ var
 begin
   Result := False;
 
-  if Trim(edtCodigo.Text) = '' then
-  begin
-    ShowMessage('Informe o código do produto.');
-    edtCodigo.SetFocus;
+  if not CodigoProdutoValido then
     Exit;
-  end;
 
   if Trim(edtNome.Text) = '' then
   begin
@@ -264,6 +267,14 @@ begin
     Exit;
   end;
 
+  if DM.ProdutoPossuiItensPedido(edtCodigo.Text) then
+  begin
+    ShowMessage(
+      'Este produto não pode ser excluído porque possui itens vinculados a pedidos.'
+    );
+    Exit;
+  end;
+
   if not ConfirmarExclusao then
     Exit;
 
@@ -312,6 +323,62 @@ begin
   DM.BuscarProduto(Trim(edtCodigo.Text));
 
   Result := not DM.IBQueryProdutos.IsEmpty;
+end;
+
+procedure TFormProdutos.edtCodigoKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then
+    Key := #0;
+end;
+
+
+function TFormProdutos.CodigoProdutoValido: Boolean;
+var
+  Indice: Integer;
+  Codigo: String;
+begin
+  Result := False;
+  Codigo := Trim(edtCodigo.Text);
+
+  if Codigo = '' then
+  begin
+    ShowMessage('Informe o código do produto.');
+    edtCodigo.SetFocus;
+    Exit;
+  end;
+
+  if Length(Codigo) > 20 then
+  begin
+    ShowMessage('O código do produto deve ter no máximo 20 dígitos.');
+    edtCodigo.SetFocus;
+    Exit;
+  end;
+
+  for Indice := 1 to Length(Codigo) do
+  begin
+    if not (Codigo[Indice] in ['0'..'9']) then
+    begin
+      ShowMessage('O código do produto deve conter somente números.');
+      edtCodigo.SetFocus;
+      Exit;
+    end;
+  end;
+
+  Result := True;
+end;
+
+procedure TFormProdutos.FormShow(Sender: TObject);
+begin
+  LimparCampos;
+end;
+
+procedure TFormProdutos.btnConsultaClick(Sender: TObject);
+begin
+  if FrmConsultaProdutos.ShowModal = mrOk then
+  begin
+    edtCodigo.Text := FrmConsultaProdutos.CodigoSelecionado;
+    BuscarProduto;
+  end;
 end;
 
 end.

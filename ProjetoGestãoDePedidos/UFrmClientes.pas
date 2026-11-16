@@ -29,8 +29,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure edtChaveEnter(Sender: TObject);
     procedure btnConsultaClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
-    { Private declarations }
+    function ValidarCodigoCliente: Boolean;
+    function ValidarCampos: Boolean;
+    function SomenteDigitos(const AValor: String): String;
+    function CPFValido(const ACPF: String): Boolean;
   public
     procedure limparCampos;
     procedure salvarCliente;
@@ -45,6 +49,8 @@ implementation
 
 procedure TFrmClientes.btnSalvarClick(Sender: TObject);
 begin
+  if not ValidarCampos then
+    Exit;
   salvarCliente;
 end;
 
@@ -55,6 +61,7 @@ begin
   if DM.IBQueryClientes.IsEmpty then
     begin
       DM.SalvarCliente(
+        StrToInt(edtChave.Text),
         edtNome.Text,
         edtCPF.Text,
         edtEndereco.Text,
@@ -90,25 +97,50 @@ begin
 end;
 
 procedure TFrmClientes.BuscarCliente;
+var
+  Chave: Integer;
 begin
-    if Trim(edtChave.Text) = '' then
-      Exit;
+  if Trim(edtChave.Text) = '' then
+    Exit;
 
-    DM.BuscarCliente(StrToInt(edtChave.Text));
+  if not TryStrToInt(edtChave.Text, Chave) then
+  begin
+    ShowMessage(
+      'Informe um código inteiro entre 1 e 2147483647.'
+    );
+    edtChave.SetFocus;
+    Exit;
+  end;
 
-    if DM.IBQueryClientes.IsEmpty then
-    begin
-      edtNome.Clear;
-      edtCPF.Clear;
-      edtEndereco.Clear;
-      edtTelefone.Clear;
-      Exit;
-    end;
+  if Chave <= 0 then
+  begin
+    ShowMessage('O código do cliente deve ser maior que zero.');
+    edtChave.SetFocus;
+    Exit;
+  end;
 
-    edtNome.Text := DM.IBQueryClientes.FieldByName('NOME').AsString;
-    edtCPF.Text := DM.IBQueryClientes.FieldByName('CPF').AsString;
-    edtEndereco.Text := DM.IBQueryClientes.FieldByName('ENDERECO').AsString;
-    edtTelefone.Text := DM.IBQueryClientes.FieldByName('TELEFONE').AsString;
+  DM.BuscarCliente(Chave);
+
+  if DM.IBQueryClientes.IsEmpty then
+  begin
+    edtNome.Clear;
+    edtCPF.Clear;
+    edtEndereco.Clear;
+    edtTelefone.Clear;
+    Exit;
+  end;
+
+  edtNome.Text :=
+    DM.IBQueryClientes.FieldByName('NOME').AsString;
+
+  edtCPF.Text :=
+    DM.IBQueryClientes.FieldByName('CPF').AsString;
+
+  edtEndereco.Text :=
+    DM.IBQueryClientes.FieldByName('ENDERECO').AsString;
+
+  edtTelefone.Text :=
+    DM.IBQueryClientes.FieldByName('TELEFONE').AsString;
 end;
 
 procedure TFrmClientes.edtChaveExit(Sender: TObject);
@@ -116,45 +148,49 @@ begin
   BuscarCliente;
 end;
 
-procedure TFrmClientes.edtChaveKeyPress(Sender: TObject; var Key: Char);
+procedure TFrmClientes.edtChaveKeyPress(Sender: TObject; var Key: Char
+);
 begin
-  if Key = #13 then
-  begin
-    BuscarCliente;
+  if not (Key in ['0'..'9', #8]) then
     Key := #0;
-  end;
 end;
 
 procedure TFrmClientes.btnExcluirClick(Sender: TObject);
+var
+  Chave: Integer;
 begin
-  if Trim(edtChave.Text) = '' then
+  if not ValidarCodigoCliente then
+    Exit;
+
+  Chave := StrToInt(edtChave.Text);
+
+  if not DM.ClienteExiste(Chave) then
   begin
-    ShowMessage('Informe a chave do cliente.');
+    ShowMessage('Cliente não encontrado.');
+    edtChave.SetFocus;
+    Exit;
+  end;
+
+  if DM.ClientePossuiPedidos(Chave) then
+  begin
+    ShowMessage(
+      'Este cliente não pode ser excluído porque possui pedidos vinculados.'
+    );
     Exit;
   end;
 
   if MessageDlg(
-    'Deseja excluir este cliente?',
+    'Deseja realmente excluir este cliente?',
     mtConfirmation,
     [mbYes, mbNo],
-    0) = mrYes then
-  begin
-    try
-      DM.ExcluirCliente(StrToInt(edtChave.Text));
+    0
+  ) <> mrYes then
+    Exit;
 
-      ShowMessage('Cliente excluído com sucesso!');
+  DM.ExcluirCliente(Chave);
 
-      limparCampos;
-      edtChave.Clear;
-      edtChave.SetFocus;
-
-    except
-      on E: Exception do
-        ShowMessage(
-          'Não foi possível excluir o cliente.' + sLineBreak +
-          'Verifique se ele possui pedidos cadastrados.');
-      end;
-  end;
+  ShowMessage('Cliente excluído com sucesso.');
+  LimparCampos;
 end;
 
 
@@ -175,6 +211,148 @@ begin
     edtChave.Text := IntToStr(FrmConsulta.ChaveSelecionada);
     BuscarCliente;
   end;
+end;
+
+function TFrmClientes.ValidarCodigoCliente: Boolean;
+var
+  Chave: Integer;
+begin
+  Result := False;
+
+  if Trim(edtChave.Text) = '' then
+  begin
+    ShowMessage('Informe o código do cliente.');
+    edtChave.SetFocus;
+    Exit;
+  end;
+
+  if not TryStrToInt(edtChave.Text, Chave) then
+  begin
+    ShowMessage(
+      'Informe um código inteiro entre 1 e 2147483647.'
+    );
+    edtChave.SetFocus;
+    Exit;
+  end;
+
+  if Chave <= 0 then
+  begin
+    ShowMessage('O código do cliente deve ser maior que zero.');
+    edtChave.SetFocus;
+    Exit;
+  end;
+
+  Result := True;
+end;
+
+function TFrmClientes.ValidarCampos: Boolean;
+begin
+  Result := False;
+
+  if not ValidarCodigoCliente then
+    Exit;
+
+  if Trim(edtNome.Text) = '' then
+  begin
+    ShowMessage('Informe o nome do cliente.');
+    edtNome.SetFocus;
+    Exit;
+  end;
+
+  if Trim(edtCPF.Text) = '' then
+  begin
+    ShowMessage('Informe o CPF do cliente.');
+    edtCPF.SetFocus;
+    Exit;
+  end;
+
+  if not CPFValido(edtCPF.Text) then
+  begin
+    ShowMessage('Informe um CPF válido.');
+    edtCPF.SetFocus;
+    Exit;
+  end;
+
+  if Trim(edtEndereco.Text) = '' then
+  begin
+    ShowMessage('Informe o endereço do cliente.');
+    edtEndereco.SetFocus;
+    Exit;
+  end;
+
+  if Trim(edtTelefone.Text) = '' then
+  begin
+    ShowMessage('Informe o telefone do cliente.');
+    edtTelefone.SetFocus;
+    Exit;
+  end;
+
+  Result := True;
+end;
+
+function TFrmClientes.SomenteDigitos(
+  const AValor: String
+): String;
+var
+  Indice: Integer;
+begin
+  Result := '';
+
+  for Indice := 1 to Length(AValor) do
+  begin
+    if AValor[Indice] in ['0'..'9'] then
+      Result := Result + AValor[Indice];
+  end;
+end;
+
+function TFrmClientes.CPFValido(
+  const ACPF: String
+): Boolean;
+var
+  CPF: String;
+  Indice: Integer;
+  Soma: Integer;
+  DigitoCalculado: Integer;
+begin
+  Result := False;
+  CPF := SomenteDigitos(ACPF);
+
+  if Length(CPF) <> 11 then
+    Exit;
+
+  if CPF = StringOfChar(CPF[1], 11) then
+    Exit;
+
+  Soma := 0;
+  for Indice := 1 to 9 do
+    Soma := Soma + StrToInt(CPF[Indice]) * (11 - Indice);
+
+  DigitoCalculado := (Soma * 10) mod 11;
+
+  if DigitoCalculado = 10 then
+    DigitoCalculado := 0;
+
+  if DigitoCalculado <> StrToInt(CPF[10]) then
+    Exit;
+
+  Soma := 0;
+  for Indice := 1 to 10 do
+    Soma := Soma + StrToInt(CPF[Indice]) * (12 - Indice);
+
+  DigitoCalculado := (Soma * 10) mod 11;
+
+  if DigitoCalculado = 10 then
+    DigitoCalculado := 0;
+
+  Result := DigitoCalculado = StrToInt(CPF[11]);
+end;
+
+procedure TFrmClientes.FormShow(Sender: TObject);
+begin
+  LimparCampos;
+
+  if DM.IBQueryClientes.Active then
+    DM.IBQueryClientes.Close;
 end;
 
 end.

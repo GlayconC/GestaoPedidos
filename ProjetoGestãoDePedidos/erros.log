@@ -1,0 +1,60 @@
+Data/Hora: 13/11/2026 14:26:07
+Contexto: Erro inesperado da aplicação
+Classe: EAccessViolation
+Mensagem: Access violation at address 004DDE06 in module 'GestaoPedidos.exe'. Read of address 00000000
+----------------------------------------
+Data/Hora: 13/11/2026 14:26:11
+Contexto: Erro inesperado da aplicação
+Classe: EAccessViolation
+Mensagem: Access violation at address 004DDE06 in module 'GestaoPedidos.exe'. Read of address 00000000
+----------------------------------------
+Data/Hora: 13/11/2026 14:26:16
+Contexto: Erro inesperado da aplicação
+Classe: EAccessViolation
+Mensagem: Access violation at address 004DDE06 in module 'GestaoPedidos.exe'. Read of address 00000000
+----------------------------------------
+Data/Hora: 13/11/2026 14:26:20
+Contexto: Erro inesperado da aplicação
+Classe: EAccessViolation
+Mensagem: Access violation at address 004DDE06 in module 'GestaoPedidos.exe'. Read of address 00000000
+----------------------------------------
+Data/Hora: 13/11/2026 15:05:34
+Contexto: Erro inesperado da aplicação
+Classe: EConvertError
+Mensagem: '2147483648888' is not a valid integer value
+----------------------------------------
+Data/Hora: 16/11/2026 14:08:47
+Contexto: Erro inesperado da aplicação
+Classe: EIBInterBaseError
+Mensagem: violation of PRIMARY or UNIQUE KEY constraint "@1" on table "@2"
+----------------------------------------
+Data/Hora: 16/11/2026 14:09:44
+Contexto: Erro inesperado da aplicação
+Classe: EIBInterBaseError
+Mensagem: violation of PRIMARY or UNIQUE KEY constraint "@1" on table "@2"
+----------------------------------------
+Data/Hora: 16/11/2026 14:23:43
+Contexto: Erro inesperado da aplicação
+Classe: EIBInterBaseError
+Mensagem: violation of PRIMARY or UNIQUE KEY constraint "@1" on table "@2"
+----------------------------------------
+Data/Hora: 16/11/2026 14:24:58
+Contexto: Erro inesperado da aplicação
+Classe: EIBInterBaseError
+Mensagem: violation of PRIMARY or UNIQUE KEY constraint "@1" on table "@2"
+----------------------------------------
+Data/Hora: 16/11/2026 14:26:56
+Contexto: Erro inesperado da aplicação
+Classe: EIBInterBaseError
+Mensagem: violation of PRIMARY or UNIQUE KEY constraint "@1" on table "@2"
+----------------------------------------
+Data/Hora: 16/11/2026 14:27:03
+Contexto: Erro inesperado da aplicação
+Classe: EIBInterBaseError
+Mensagem: violation of PRIMARY or UNIQUE KEY constraint "@1" on table "@2"
+----------------------------------------
+Data/Hora: 16/11/2026 16:00:20
+Contexto: Erro inesperado da aplicação
+Classe: Exception
+Mensagem: Estoque insuficiente para o produto "azul". Disponível: 5. Solicitado: 10.
+----------------------------------------

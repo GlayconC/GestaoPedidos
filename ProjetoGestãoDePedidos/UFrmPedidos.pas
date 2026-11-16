@@ -46,12 +46,16 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnFinalizarClick(Sender: TObject);
     procedure btnCancelarClick(Sender: TObject);
+    procedure CodigoNumericoKeyPress(Sender: TObject; var Key: Char);
   private
     FPedidoExistente: Boolean;
     FPedidoRecemGravado: Boolean;
+    FChavePedido: Integer;
+    FAlteracoesPendentes: Boolean;
 
     function PedidoValido: Boolean;
-    procedure GravarPedido;
+    function SalvarPedidoAtual: Boolean;
+    //procedure GravarPedido;
     procedure PrepararNovoPedido;
     function BuscarCliente: Boolean;
     procedure LimparDadosCliente;
@@ -71,6 +75,7 @@ type
       const AMensagemSucesso: String
     );
     procedure ImprimirPedido;
+    function SalvarAntesDeFinalizar: Boolean;
 
   public
     { Public declarations }
@@ -85,6 +90,7 @@ implementation
 
 procedure TFrmPedidos.PrepararNovoPedido;
 begin
+  FChavePedido := 0;
   FPedidoExistente := False;
   FPedidoRecemGravado := False;
 
@@ -98,7 +104,8 @@ begin
   edtNomeCliente.Clear;
   edtValorTotalPedido.Clear;
 
-  LimparDadosProduto;
+  FAlteracoesPendentes := False;
+  LimparEntradaProduto;
   AtualizarAcoesPedido;
 end;
 
@@ -151,7 +158,12 @@ end;
 procedure TFrmPedidos.edtChaveClienteExit(Sender: TObject);
 begin
   if not BuscarCliente then
+  begin
     edtChaveCliente.SetFocus;
+    Exit;
+  end;
+
+  FAlteracoesPendentes := True;
 end;
 
 procedure TFrmPedidos.LimparDadosProduto;
@@ -225,6 +237,12 @@ begin
     FPedidoExistente and PedidoAberto and
     not FPedidoRecemGravado;
 
+  btnFinalizar.Enabled :=
+    FPedidoExistente and (edtStatus.Text = 'ABERTO');
+
+  btnCancelar.Enabled :=
+    FPedidoExistente and (edtStatus.Text = 'ABERTO');
+
   btnCancelar.Enabled :=
     FPedidoExistente and PedidoAberto and
     not FPedidoRecemGravado;
@@ -250,6 +268,7 @@ end;
 
 procedure TFrmPedidos.PrepararModoInsercao;
 begin
+  FChavePedido := 0;
   FPedidoExistente := False;
   FPedidoRecemGravado := False;
   DMPedidos.LimparItensTemporarios;
@@ -261,7 +280,8 @@ begin
   edtNomeCliente.Clear;
   edtValorTotalPedido.Clear;
 
-  LimparDadosProduto;
+  FAlteracoesPendentes := False;
+  LimparEntradaProduto;
   AtualizarAcoesPedido;
 end;
 
@@ -269,7 +289,16 @@ procedure TFrmPedidos.CarregarPedidoExistente;
 begin
   FPedidoExistente := True;
   FPedidoRecemGravado := False;
+
+  FChavePedido :=
+    DMPedidos.IBQueryPedidos.FieldByName('CHAVE').AsInteger;
+
   DMPedidos.LimparItensTemporarios;
+
+  edtNumeroPedido.Text :=
+    DMPedidos.IBQueryPedidos.FieldByName(
+      'NUMERO_DOCUMENTO'
+    ).AsString;
 
   edtChaveCliente.Text :=
     DMPedidos.IBQueryPedidos.FieldByName(
@@ -295,19 +324,19 @@ begin
     );
 
   if not BuscarCliente then
-  Exit;
+    Exit;
 
-  DMPedidos.CarregarItensPedido(
-    DMPedidos.IBQueryPedidos.FieldByName('CHAVE').AsInteger
-  );
+  DMPedidos.CarregarItensPedido(FChavePedido);
+  LimparEntradaProduto;
 
+  FAlteracoesPendentes := False;
   AtualizarTotalPedido;
   AtualizarAcoesPedido;
 end;
 
 procedure TFrmPedidos.edtNumeroPedidoExit(Sender: TObject);
 var
-  NumeroPedido: Integer;
+  NumeroDocumento: Integer;
 begin
   if Trim(edtNumeroPedido.Text) = '' then
   begin
@@ -315,22 +344,24 @@ begin
     Exit;
   end;
 
-  if not TryStrToInt(edtNumeroPedido.Text, NumeroPedido) then
+  if not TryStrToInt(Trim(edtNumeroPedido.Text), NumeroDocumento) or
+     (NumeroDocumento <= 0) then
   begin
     ShowMessage('Informe um número de pedido válido.');
     edtNumeroPedido.SetFocus;
     Exit;
   end;
 
-  DMPedidos.BuscarPedido(NumeroPedido);
+  DMPedidos.BuscarPedido(NumeroDocumento);
 
   if DMPedidos.IBQueryPedidos.IsEmpty then
   begin
     PrepararModoInsercao;
-    Exit;
-  end;
 
-  CarregarPedidoExistente;
+    edtNumeroPedido.Text := IntToStr(NumeroDocumento);
+  end
+  else
+    CarregarPedidoExistente;
 end;
 
 function TFrmPedidos.QuantidadeProdutoValida: Boolean;
@@ -424,6 +455,7 @@ begin
     Quantidade * PrecoUnitario;
   DMPedidos.cdsItensTemporarios.Post;
 
+  FAlteracoesPendentes := True;
   AtualizarTotalPedido;
   LimparEntradaProduto;
 end;
@@ -449,6 +481,7 @@ begin
   ) <> mrYes then
     Exit;
 
+  FAlteracoesPendentes := True;
   DMPedidos.cdsItensTemporarios.Delete;
   AtualizarTotalPedido;
 end;
@@ -477,46 +510,76 @@ begin
   Result := True;
 end;
 
-procedure TFrmPedidos.GravarPedido;
+function TFrmPedidos.SalvarPedidoAtual: Boolean;
 var
-  ChavePedido: Integer;
+  NumeroDocumento: Integer;
   ChaveCliente: Integer;
-  PedidoNovo: Boolean;
+  ValorTotalEmDouble: Double;
+  ValorTotal: Currency;
 begin
+  Result := False;
+
+  if not TryStrToInt(
+    Trim(edtNumeroPedido.Text),
+    NumeroDocumento
+  ) or (NumeroDocumento <= 0) then
+  begin
+    ShowMessage('Informe um número de pedido válido.');
+    edtNumeroPedido.SetFocus;
+    Exit;
+  end;
+
   if not PedidoValido then
     Exit;
 
-  PedidoNovo := not FPedidoExistente;
+  AtualizarTotalPedido;
 
-  if FPedidoExistente then
-    ChavePedido := StrToInt(edtNumeroPedido.Text)
-  else
-    ChavePedido := 0;
+  { Delphi 7 não possui TryStrToCurr. }
+  if not TryStrToFloat(
+    edtValorTotalPedido.Text,
+    ValorTotalEmDouble
+  ) then
+  begin
+    ShowMessage('Não foi possível calcular o total do pedido.');
+    Exit;
+  end;
 
-  ChaveCliente := StrToInt(edtChaveCliente.Text);
+  ValorTotal := ValorTotalEmDouble;
 
-  ChavePedido := DMPedidos.SalvarPedido(
-    ChavePedido,
+  if not TryStrToInt(
+    Trim(edtChaveCliente.Text),
+    ChaveCliente
+  ) then
+  begin
+    ShowMessage('Informe um código de cliente válido.');
+    edtChaveCliente.SetFocus;
+    Exit;
+  end;
+
+  FChavePedido := DMPedidos.SalvarPedido(
+    FChavePedido,
+    NumeroDocumento,
     ChaveCliente,
     dtpDataPedido.Date,
     edtStatus.Text,
-    StrToCurr(edtValorTotalPedido.Text)
+    ValorTotal
   );
 
-  edtNumeroPedido.Text := IntToStr(ChavePedido);
   FPedidoExistente := True;
+  FPedidoRecemGravado := False;
+  FAlteracoesPendentes := False;
 
-  if PedidoNovo then
-    FPedidoRecemGravado := True;
+  edtNumeroPedido.Text := IntToStr(NumeroDocumento);
 
   AtualizarAcoesPedido;
 
-  ShowMessage('Pedido gravado com sucesso.');
+  Result := True;
 end;
 
 procedure TFrmPedidos.btnGravarClick(Sender: TObject);
 begin
-  GravarPedido;
+  if SalvarPedidoAtual then
+    ShowMessage('Pedido gravado com sucesso.');
 end;
 
 procedure TFrmPedidos.FormKeyDown(
@@ -528,7 +591,8 @@ begin
   if Key = VK_F12 then
   begin
     if btnGravar.Enabled then
-      GravarPedido;
+      if SalvarPedidoAtual then
+        ShowMessage('Pedido gravado com sucesso.');
 
     Key := 0;
   end;
@@ -564,7 +628,7 @@ begin
   ) <> mrYes then
     Exit;
 
-  ChavePedido := StrToInt(edtNumeroPedido.Text);
+  ChavePedido := FChavePedido;
 
   DMPedidos.AtualizarStatusPedido(ChavePedido, ANovoStatus);
 
@@ -587,6 +651,9 @@ end;
 
 procedure TFrmPedidos.btnFinalizarClick(Sender: TObject);
 begin
+  if not SalvarAntesDeFinalizar then
+    Exit;
+
   AlterarStatusPedido(
     'FINALIZADO',
     'Deseja finalizar este pedido?',
@@ -612,6 +679,33 @@ begin
     StrToCurr(edtValorTotalPedido.Text),
     DMPedidos.cdsItensTemporarios
   );
+end;
+
+procedure TFrmPedidos.CodigoNumericoKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then
+    Key := #0;
+end;
+
+function TFrmPedidos.SalvarAntesDeFinalizar: Boolean;
+begin
+  Result := True;
+
+  if not FAlteracoesPendentes then
+    Exit;
+
+  if MessageDlg(
+    'Existem alterações não gravadas. Deseja gravar antes de finalizar o pedido?',
+    mtConfirmation,
+    [mbYes, mbNo],
+    0
+  ) <> mrYes then
+  begin
+    Result := False;
+    Exit;
+  end;
+
+  Result := SalvarPedidoAtual;
 end;
 
 end.
