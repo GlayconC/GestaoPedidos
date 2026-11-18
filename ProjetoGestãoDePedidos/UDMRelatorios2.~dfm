@@ -1,5 +1,6 @@
 object DMRelatorios2: TDMRelatorios2
   OldCreateOrder = False
+  OnCreate = DataModuleCreate
   Left = 547
   Top = 364
   Height = 316

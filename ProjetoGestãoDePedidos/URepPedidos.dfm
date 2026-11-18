@@ -85,11 +85,11 @@ object FrmRepPedidos: TFrmRepPedidos
       Left = 38
       Top = 95
       Width = 718
-      Height = 73
+      Height = 34
       Transparent = False
       object RLDBText1: TRLDBText
-        Left = 304
-        Top = 56
+        Left = 296
+        Top = 8
         Width = 57
         Height = 16
         DataField = 'CLIENTE'
@@ -98,7 +98,7 @@ object FrmRepPedidos: TFrmRepPedidos
       end
       object RLDBText2: TRLDBText
         Left = 440
-        Top = 56
+        Top = 8
         Width = 54
         Height = 16
         DataField = 'STATUS'
@@ -107,7 +107,7 @@ object FrmRepPedidos: TFrmRepPedidos
       end
       object RLDBText8: TRLDBText
         Left = 570
-        Top = 56
+        Top = 8
         Width = 95
         Height = 16
         Alignment = taRightJustify
@@ -117,8 +117,8 @@ object FrmRepPedidos: TFrmRepPedidos
         Transparent = False
       end
       object RLDBText9: TRLDBText
-        Left = 184
-        Top = 56
+        Left = 192
+        Top = 8
         Width = 38
         Height = 16
         DataField = 'DATA'
@@ -126,8 +126,8 @@ object FrmRepPedidos: TFrmRepPedidos
         Transparent = False
       end
       object RLDBText10: TRLDBText
-        Left = 32
-        Top = 56
+        Left = 16
+        Top = 8
         Width = 117
         Height = 16
         DataField = 'NUMERO_PEDIDO'
@@ -137,7 +137,7 @@ object FrmRepPedidos: TFrmRepPedidos
     end
     object rlRodape: TRLBand
       Left = 38
-      Top = 168
+      Top = 129
       Width = 718
       Height = 67
       BandType = btFooter

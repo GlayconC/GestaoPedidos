@@ -44,6 +44,12 @@ procedure TFrmRepPedidos.FormCreate(Sender: TObject);
 begin
   rlDataSourcePedidos.DataSet :=
     DMRelatorios2.IBQueryRelatorioPedidos;
+
+  rlRelatorioPedidos.DataSource := rlDataSourcePedidos;
+
+  rlCabecalho.BandType := btHeader;
+  rlDetalhe.BandType := btDetail;
+  rlRodape.BandType := btFooter;
 end;
 
 end.

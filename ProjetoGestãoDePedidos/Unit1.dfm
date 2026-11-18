@@ -1,6 +1,6 @@
 object FrmPrincipal: TFrmPrincipal
-  Left = 459
-  Top = 293
+  Left = 302
+  Top = 215
   Width = 1305
   Height = 675
   Caption = 'FrmPrincipal'

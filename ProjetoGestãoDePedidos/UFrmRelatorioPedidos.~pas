@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Grids, DBGrids, ComCtrls, UDMRelatorios2, UImpressaoRelatorioPedidos;
+  Dialogs, StdCtrls, Grids, DBGrids, ComCtrls, UDMRelatorios2, URepPedidos, UImpressaoRelatorioPedidos;
 
 type
   TFrmRelatorioPedidos = class(TForm)
@@ -35,7 +35,9 @@ implementation
 
 procedure TFrmRelatorioPedidos.FormShow(Sender: TObject);
 begin
-  dtpDataInicial.Date := Date - 30;
+  if DMRelatorios2.IBQueryRelatorioPedidos.Active then
+    DMRelatorios2.IBQueryRelatorioPedidos.Close;
+  dtpDataInicial.Date := Date;
   dtpDataFinal.Date := Date;
 
   DBGrid1.DataSource := DMRelatorios2.dsRelatorioPedidos;
@@ -46,7 +48,7 @@ end;
 
 procedure TFrmRelatorioPedidos.btnConsultarClick(Sender: TObject);
 begin
-  if dtpDataInicial.Date > dtpDataFinal.Date then
+  if Trunc(dtpDataInicial.Date) > Trunc(dtpDataFinal.Date) then
   begin
     ShowMessage('A data inicial não pode ser maior que a data final.');
     dtpDataInicial.SetFocus;
@@ -54,8 +56,8 @@ begin
   end;
 
   DMRelatorios2.ConsultarPedidosPorPeriodo(
-    dtpDataInicial.Date,
-    dtpDataFinal.Date
+    Trunc(dtpDataInicial.Date),
+    Trunc(dtpDataFinal.Date)
   );
 
   btnImprimir.Enabled :=
@@ -69,11 +71,13 @@ end;
 
 procedure TFrmRelatorioPedidos.btnImprimirClick(Sender: TObject);
 begin
-  TImpressaoRelatorioPedidos.Imprimir(
-    dtpDataInicial.Date,
-    dtpDataFinal.Date,
-    DMRelatorios2.IBQueryRelatorioPedidos
-  );
+  if DMRelatorios2.IBQueryRelatorioPedidos.IsEmpty then
+  begin
+    ShowMessage('Não há pedidos para imprimir.');
+    Exit;
+  end;
+
+  FrmRepPedidos.rlRelatorioPedidos.Preview;
 end;
 
 procedure TFrmRelatorioPedidos.btnGerarPDFClick(

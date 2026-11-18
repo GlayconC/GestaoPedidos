@@ -1,8 +1,8 @@
 object DMRelatorios2: TDMRelatorios2
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Left = 547
-  Top = 364
+  Left = 798
+  Top = 349
   Height = 316
   Width = 404
   object IBQueryRelatorioPedidos: TIBQuery
